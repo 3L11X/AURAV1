@@ -1,10 +1,10 @@
-const results_container = document.querySelector("#saavn-results");
-const results_objects = {};
+const resultsContainer = document.querySelector("#saavn-results");
+const resultsObjects = {};
 const searchUrl = "https://jiosaavn-api-privatecvc.vercel.app/search/songs?query=";
 let lastSearch = "";
-let page_index = 1;
+let pageIndex = 1;
 
-function SaavnSearch(event) {
+function saavnSearch(event) {
     event.preventDefault();
     const query = document.querySelector("#saavn-search-box").value.trim();
     const encodedQuery = encodeURIComponent(query);
@@ -22,7 +22,7 @@ function nextPage() {
     doSaavnSearch(encodedQuery, 0, true);
 }
 
-async function doSaavnSearch(query, NotScroll, page) {
+async function doSaavnSearch(query, notScroll, page) {
     window.location.hash = query;
     document.querySelector("#saavn-search-box").value = decodeURIComponent(query);
 
@@ -30,14 +30,14 @@ async function doSaavnSearch(query, NotScroll, page) {
         return 0;
     }
 
-    results_container.innerHTML = `<span class="loader">Searching</span>`;
-    const queryWithLimit = `${query}&limit=40`;
+    resultsContainer.innerHTML = `<span class="loader">Searching</span>`;
+    let queryWithLimit = `${query}&limit=40`;
 
     if (page) {
-        page_index += 1;
-        queryWithLimit += `&page=${page_index}`;
+        pageIndex += 1;
+        queryWithLimit += `&page=${pageIndex}`;
     } else {
-        page_index = 1;
+        pageIndex = 1;
     }
 
     try {
@@ -45,36 +45,36 @@ async function doSaavnSearch(query, NotScroll, page) {
         const json = await response.json();
 
         if (response.status !== 200) {
-            results_container.innerHTML = `<span class="error">Error: ${json.message}</span>`;
+            resultsContainer.innerHTML = `<span class="error">Error: ${json.message}</span>`;
             return;
         }
 
         const results = json.data.results;
 
         if (!results) {
-            results_container.innerHTML = "<p>No result found. Try another library</p>";
+            resultsContainer.innerHTML = "<p>No result found. Try another library</p>";
             return;
         }
 
         lastSearch = decodeURI(window.location.hash.substring(1));
 
         const htmlResults = results.map(track => {
-            const song_name = TextAbstract(track.name, 25);
-            const album_name = TextAbstract(track.album.name, 20);
+            const songName = textAbstract(track.name, 25);
+            const albumName = textAbstract(track.album.name, 20);
             // ... (continue building the HTML for each result)
         });
 
-        results_container.innerHTML = htmlResults.join(' ');
+        resultsContainer.innerHTML = htmlResults.join(' ');
 
-        if (!NotScroll) {
+        if (!notScroll) {
             document.getElementById("saavn-results").scrollIntoView();
         }
     } catch (error) {
-        results_container.innerHTML = `<span class="error">Error: ${error}<br>Check if API is down</span>`;
+        resultsContainer.innerHTML = `<span class="error">Error: ${error}<br>Check if API is down</span>`;
     }
 }
 
-function TextAbstract(text, length) {
+function textAbstract(text, length) {
     if (text == null) {
         return "";
     }
@@ -82,8 +82,8 @@ function TextAbstract(text, length) {
         return text;
     }
     text = text.substring(0, length);
-    last = text.lastIndexOf(" ");
-    text = text.substring(0, last);
+    const lastSpace = text.lastIndexOf(" ");
+    text = text.substring(0, lastSpace);
     return text + "...";
 }
 
